@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrack - Expense Tracker</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="bg-slate-50 text-slate-800">
+    <div class="container mx-auto max-w-6xl p-4 md:p-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-slate-900">FinTrack</h1>
+            <p class="text-slate-500">Your personal finance dashboard.</p>
+        </header>
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 flex flex-col gap-8">
+                <section id="dashboard">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <div class="card text-center">
+                            <h3 class="text-sm font-medium text-slate-500">TOTAL BALANCE</h3>
+                            <p id="balance" class="text-3xl font-bold mt-1">$0.00</p>
+                        </div>
+                        <div class="card text-center">
+                            <h3 class="text-sm font-medium text-green-600">INCOME</h3>
+                            <p id="income" class="text-3xl font-bold text-green-500 mt-1">$0.00</p>
+                        </div>
+                        <div class="card text-center">
+                            <h3 class="text-sm font-medium text-red-600">EXPENSE</h3>
+                            <p id="expense" class="text-3xl font-bold text-red-500 mt-1">$0.00</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="add-transaction" class="card">
+                    <h2 class="text-xl font-bold mb-4">Add New Transaction</h2>
+                    <form id="transaction-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="text" placeholder="Description" class="w-full p-3 bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            <input type="number" id="amount" placeholder="Amount (e.g., 50 or -50)" class="w-full p-3 bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <select id="category" class="w-full p-3 bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+
+                            </select>
+                            <input type="date" id="date" class="w-full p-3 bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors">Add Transaction</button>
+                    </form>
+                </section>
+                
+                <section class="card">
+                     <h2 class="text-xl font-bold mb-4">Expense Breakdown</h2>
+                     <div class="h-64 md:h-80"><canvas id="expense-chart"></canvas></div>
+                </section>
+
+            </div>
+
+            <aside class="lg:col-span-1 card">
+                <h2 class="text-xl font-bold mb-4">Transaction History</h2>
+                <input type="text" id="search" placeholder="Search transactions..." class="w-full p-3 mb-4 bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <ul id="transaction-list" class="space-y-3 h-[40rem] overflow-y-auto pr-2">
+                </ul>
+            </aside>
+        </main>
+    </div>
+
+    <div id="edit-modal" class="modal-hidden fixed inset-0 bg-black bg-opacity-50 justify-center items-center">
+        <div id="edit-modal-content" class="card w-full max-w-md m-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Edit Transaction</h2>
+                <button id="close-modal" class="text-2xl font-bold text-slate-500 hover:text-slate-800">&times;</button>
+            </div>
+            <form id="edit-form" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                <div>
+                    <label for="edit-text" class="block text-sm font-medium text-slate-600 mb-1">Description</label>
+                    <input type="text" id="edit-text" class="w-full p-3 bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="edit-amount" class="block text-sm font-medium text-slate-600 mb-1">Amount</label>
+                    <input type="number" id="edit-amount" class="w-full p-3 bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                 <div>
+                    <label for="edit-category" class="block text-sm font-medium text-slate-600 mb-1">Category</label>
+                    <select id="edit-category" class="w-full p-3 bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required></select>
+                </div>
+                 <div>
+                    <label for="edit-date" class="block text-sm font-medium text-slate-600 mb-1">Date</label>
+                    <input type="date" id="edit-date" class="w-full p-3 bg-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                <div class="flex gap-4">
+                    <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors">Update Transaction</button>
+                    <button type="button" id="cancel-edit" class="w-full bg-slate-200 text-slate-800 font-bold py-3 px-4 rounded-lg hover:bg-slate-300 transition-colors">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html
